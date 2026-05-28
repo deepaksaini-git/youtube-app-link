@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitHub YouTube App Opener</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #0f0f0f;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: #181818;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 0 30px rgba(255,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #ff3b3b;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      background: #252525;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #ff0000;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #d60000;
+    }
+
+    .output {
+      margin-top: 20px;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      background: #00a86b;
+    }
+
+    .copy-btn:hover {
+      background: #008f5a;
+    }
+
+    .preview {
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 12px;
+      background: #222;
+      text-align: center;
+    }
+
+    .preview a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #fff;
+      text-decoration: none;
+      background: #ff0000;
+      padding: 12px 20px;
+      border-radius: 10px;
+    }
+
+    .preview a:hover {
+      background: #d60000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GitHub YouTube App Opener</h1>
+
+    <input type="text" id="youtubeLink" placeholder="Paste YouTube Video Link" />
+
+    <button onclick="generateLink()">Generate App Opener Link</button>
+
+    <div class="output">
+      <textarea id="generatedLink" rows="4" placeholder="Generated link will appear here..." readonly></textarea>
+      <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+    </div>
+
+    <div class="preview" id="previewBox" style="display:none;">
+      <p>Preview:</p>
+      <a id="openBtn" href="#" target="_blank">Open in YouTube App</a>
+    </div>
+  </div>
+
+  <script>
+    function extractVideoId(url) {
+      try {
+        const parsed = new URL(url);
+
+        if (parsed.hostname.includes('youtu.be')) {
+          return parsed.pathname.slice(1);
+        }
+
+        if (parsed.searchParams.get('v')) {
+          return parsed.searchParams.get('v');
+        }
+
+        const pathParts = parsed.pathname.split('/');
+        const embedIndex = pathParts.indexOf('embed');
+
+        if (embedIndex !== -1 && pathParts[embedIndex + 1]) {
+          return pathParts[embedIndex + 1];
+        }
+
+        return null;
+      } catch {
+        return null;
+      }
+    }
+
+    function generateLink() {
+      const input = document.getElementById('youtubeLink').value.trim();
+      const output = document.getElementById('generatedLink');
+      const preview = document.getElementById('previewBox');
+      const openBtn = document.getElementById('openBtn');
+
+      const videoId = extractVideoId(input);
+
+      if (!videoId) {
+        output.value = 'Invalid YouTube link';
+        preview.style.display = 'none';
+        return;
+      }
+
+      const appLink = `${window.location.origin}${window.location.pathname}?v=${videoId}`;
+
+      output.value = appLink;
+      openBtn.href = appLink;
+      preview.style.display = 'block';
+    }
+
+    function copyLink() {
+      const text = document.getElementById('generatedLink');
+
+      if (!text.value) return;
+
+      text.select();
+      text.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(text.value);
+
+      alert('Link copied successfully!');
+    }
+  
+    // Auto open from generated GitHub Pages link
+    const params = new URLSearchParams(window.location.search);
+    const autoVideoId = params.get('v');
+
+    if (autoVideoId) {
+      const appUrl = `vnd.youtube://www.youtube.com/watch?v=${autoVideoId}`;
+      const fallbackUrl = `https://www.youtube.com/watch?v=${autoVideoId}`;
+
+      window.location.href = appUrl;
+
+      setTimeout(() => {
+        window.location.href = fallbackUrl;
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
