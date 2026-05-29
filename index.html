@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube App Opener</title>
+
+  <meta name="theme-color" content="#ff0000" />
+  <meta name="description" content="Open YouTube videos directly in the YouTube app" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #0f0f0f;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 550px;
+      background: #181818;
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 0 40px rgba(255, 0, 0, 0.15);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #ff2b2b;
+    }
+
+    p {
+      text-align: center;
+      color: #bbbbbb;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      outline: none;
+      border-radius: 14px;
+      background: #252525;
+      color: white;
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 15px;
+      background: #ff0000;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #d60000;
+    }
+
+    textarea {
+      width: 100%;
+      margin-top: 18px;
+      border: none;
+      outline: none;
+      resize: none;
+      border-radius: 14px;
+      padding: 15px;
+      background: #252525;
+      color: white;
+      font-size: 14px;
+      height: 120px;
+    }
+
+    .copy {
+      margin-top: 12px;
+      background: #00a86b;
+    }
+
+    .copy:hover {
+      background: #008f5a;
+    }
+
+    .info {
+      margin-top: 20px;
+      background: #202020;
+      padding: 15px;
+      border-radius: 14px;
+      font-size: 14px;
+      color: #bdbdbd;
+      line-height: 1.6;
+    }
+
+    .loader {
+      text-align: center;
+      font-size: 18px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>YouTube App Opener</h1>
+
+    <p>
+      Paste any YouTube video URL and generate a GitHub Pages link
+      that opens directly in the YouTube app.
+    </p>
+
+    <input
+      type="text"
+      id="youtubeInput"
+      placeholder="Paste YouTube Video URL"
+    />
+
+    <button onclick="generateLink()">
+      Generate App Opener Link
+    </button>
+
+    <textarea
+      id="output"
+      placeholder="Generated GitHub opener link will appear here..."
+      readonly
+    ></textarea>
+
+    <button class="copy" onclick="copyLink()">
+      Copy Link
+    </button>
+
+    <div class="info">
+      Example Generated Link:<br><br>
+      https://yourusername.github.io/repository/?v=VIDEO_ID
+    </div>
+
+    <div class="loader" id="loader">
+      Opening YouTube App...
+    </div>
+  </div>
+
+  <script>
+    function getVideoId(url) {
+      try {
+        const parsed = new URL(url);
+
+        if (parsed.hostname.includes('youtu.be')) {
+          return parsed.pathname.substring(1);
+        }
+
+        if (parsed.searchParams.get('v')) {
+          return parsed.searchParams.get('v');
+        }
+
+        if (parsed.pathname.includes('/shorts/')) {
+          return parsed.pathname.split('/shorts/')[1].split('/')[0];
+        }
+
+        return null;
+      } catch {
+        return null;
+      }
+    }
+
+    function generateLink() {
+      const input = document.getElementById('youtubeInput').value.trim();
+      const output = document.getElementById('output');
+
+      const videoId = getVideoId(input);
+
+      if (!videoId) {
+        output.value = 'Invalid YouTube URL';
+        return;
+      }
+
+      const generated = `${window.location.origin}${window.location.pathname}?v=${videoId}`;
+
+      output.value = generated;
+    }
+
+    function copyLink() {
+      const output = document.getElementById('output');
+
+      if (!output.value) return;
+
+      output.select();
+      output.setSelectionRange(0, 99999);
+
+      navigator.clipboard.writeText(output.value);
+
+      alert('Link Copied Successfully');
+    }
+
+    // Auto Open YouTube App
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get('v');
+
+    if (videoId) {
+      document.getElementById('loader').style.display = 'block';
+
+      const appLink = `vnd.youtube://www.youtube.com/watch?v=${videoId}`;
+      const fallback = `https://www.youtube.com/watch?v=${videoId}`;
+
+      window.location.href = appLink;
+
+      setTimeout(() => {
+        window.location.href = fallback;
+      }, 1800);
+    }
+  </script>
+</body>
+</html>
